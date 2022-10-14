@@ -24,18 +24,20 @@ if __name__ == "__main__":
 	# Modify camera configuration
 	device_config = pykinect.default_configuration
 	device_config.color_resolution = pykinect.K4A_COLOR_RESOLUTION_OFF
-	device_config.depth_mode = pykinect.K4A_DEPTH_MODE_WFOV_2X2BINNED
+	device_config.depth_mode = pykinect.K4A_DEPTH_MODE_WFOV_UNBINNED
+	device_config.camera_fps = pykinect.K4A_FRAMES_PER_SECOND_5
 	#print(device_config)
 
 	# Start device
-	device = pykinect.start_device(config=device_config)
-	print(device.get_serialnum())
+	device_idx = 0
+	device = pykinect.start_device(config=device_config, device_index=device_idx)
+	camera_name = serial_num_to_camera_name.get(device.get_serialnum(), "a0")
 
 	# Start body tracker
 	bodyTracker = pykinect.start_body_tracker()
 
-	cv2.namedWindow('Depth image with skeleton',cv2.WINDOW_NORMAL)
-	while True:
+	for i in range(20):
+		print(f"device: {device_idx} frame_num: {i}")
 
 		# Get capture
 		capture = device.update()
@@ -59,8 +61,4 @@ if __name__ == "__main__":
 		combined_image = body_frame.draw_bodies(combined_image)
 
 		# Overlay body segmentation on depth image
-		cv2.imshow('Depth image with skeleton',combined_image)
-
-		# Press q key to stop
-		if cv2.waitKey(1) == ord('q'):  
-			break
+		cv2.imwrite(f'wfov_{camera_name}.png',combined_image)
