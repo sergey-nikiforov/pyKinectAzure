@@ -216,7 +216,7 @@ K4ABT_DEFAULT_MODEL = 0
 K4ABT_LITE_MODEL = 1
 
 k4abt_tracker_default_configuration = k4abt_tracker_configuration_t()
-k4abt_tracker_default_configuration.sensor_orientation = K4ABT_SENSOR_ORIENTATION_DEFAULT
+k4abt_tracker_default_configuration.sensor_orientation = K4ABT_SENSOR_ORIENTATION_CLOCKWISE90
 k4abt_tracker_default_configuration.processing_mode = K4ABT_TRACKER_PROCESSING_MODE_GPU
 k4abt_tracker_default_configuration.gpu_device_id = 0
 
