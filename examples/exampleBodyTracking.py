@@ -4,6 +4,18 @@ import cv2
 sys.path.insert(1, '../')
 import pykinect_azure as pykinect
 
+serial_num_to_camera_name = {
+  "000840215012": "a1",
+  "000872415012": "a2",
+  "000844515012": "a3",
+  "000166110212": "b1",
+  "000543214112": "b2",
+  "000132112912": "b3",
+  "000750215012": "c1",
+  "000705215012": "c2",
+  "000693315012": "c3"
+}
+
 if __name__ == "__main__":
 
 	# Initialize the library, if the library is not found, add the library path as argument
@@ -17,6 +29,7 @@ if __name__ == "__main__":
 
 	# Start device
 	device = pykinect.start_device(config=device_config)
+	print(device.get_serialnum())
 
 	# Start body tracker
 	bodyTracker = pykinect.start_body_tracker()
