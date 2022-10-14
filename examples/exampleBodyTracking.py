@@ -1,5 +1,7 @@
 import sys
 import cv2
+import json
+import numpy as np
 
 sys.path.insert(1, "../")
 import pykinect_azure as pykinect
@@ -31,13 +33,13 @@ if __name__ == "__main__":
     for device_idx in range(9):
         # Start device
         device = pykinect.start_device(config=device_config, device_index=device_idx)
-        camera_name = serial_num_to_camera_name.get(device.get_serialnum(), "a0")
+        camera_name = serial_num_to_camera_name.get(device.get_serialnum(), "x")
 
         # Start body tracker
         bodyTracker = pykinect.start_body_tracker()
 
         for i in range(20):
-            print(f"device: {device_idx} frame_num: {i}")
+            print(f"device: {device_idx} camera_name: {camera_name} frame_num: {i}")
 
             # Get capture
             capture = device.update()
@@ -46,25 +48,30 @@ if __name__ == "__main__":
             body_frame = bodyTracker.update()
 
             if body_frame.get_num_bodies():
-                body_2d = body_frame.get_body2d()
-                print(len(body_2d.joints))
+                print(f"Detected {body_frame.get_num_bodies()} bodies")
+                joints, confidence_levels = body_frame.get_3d_joints(0)
+                d = {"joints_3d": joints, "confidence_levels": confidence_levels}
+                json.dump(d, open(f"output/joints_{camera_name}.json", "w"))
 
-            # Get the color depth image from the capture
-            ret, depth_color_image = capture.get_colored_depth_image()
+                ret, depthmap = capture.get_depth_image()
+                np.save(f"output/depthmap_{camera_name}.npy", depthmap)
 
-            # Get the colored body segmentation
-            ret, body_image_color = body_frame.get_segmentation_image()
+                # Get the color depth image from the capture
+                ret, depth_color_image = capture.get_colored_depth_image()
 
-            if not ret:
-                continue
+                # Get the colored body segmentation
+                ret, body_image_color = body_frame.get_segmentation_image()
 
-            # Combine both images
-            combined_image = cv2.addWeighted(
-                depth_color_image, 0.6, body_image_color, 0.4, 0
-            )
+                if not ret:
+                    continue
 
-            # Draw the skeletons
-            combined_image = body_frame.draw_bodies(combined_image)
+                # Combine both images
+                combined_image = cv2.addWeighted(
+                    depth_color_image, 0.6, body_image_color, 0.4, 0
+                )
 
-            # Overlay body segmentation on depth image
-            cv2.imwrite(f"wfov_{camera_name}.png", combined_image)
+                # Draw the skeletons
+                combined_image = body_frame.draw_bodies(combined_image)
+
+                # Overlay body segmentation on depth image
+                cv2.imwrite(f"output/bodysegm_{camera_name}.png", combined_image)
