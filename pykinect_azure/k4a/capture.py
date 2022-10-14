@@ -1,5 +1,5 @@
 import cv2 
-
+import ctypes 
 from pykinect_azure.k4a import _k4a
 from pykinect_azure.k4a.image import Image
 from pykinect_azure.k4a.transformation import Transformation
@@ -110,6 +110,13 @@ class Capture:
 
 
 
+	def set_depth_image(self, depth_image):
+		image_handle = _k4a.k4a_image_t()
+		width = depth_image.shape[1]
+		height = depth_image.shape[0]
+		pixel_size = 2
+		_k4a.k4a_image_create_from_buffer(_k4a.K4A_IMAGE_FORMAT_DEPTH16, width, height, pixel_size * width, depth_image.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), width * height * pixel_size, 0, 0, image_handle)
+		_k4a.k4a_capture_set_depth_image(self._handle, image_handle)
 
 
 
